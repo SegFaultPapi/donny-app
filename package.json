@@ -6,7 +6,14 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "hardhat": "hardhat",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:alfajores": "hardhat run scripts/deploy.ts --network alfajores",
+    "deploy:celo": "hardhat run scripts/deploy.ts --network celo",
+    "verify:alfajores": "hardhat verify --network alfajores",
+    "verify:celo": "hardhat verify --network celo"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

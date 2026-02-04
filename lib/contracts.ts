@@ -1,10 +1,19 @@
-// Contract addresses on CELO Sepolia
-export const USDC_ADDRESS = "0x01C5C0122039549AD1493B8220cABEdD739BC44E" as const
-export const CELO_SEPOLIA_CHAIN_ID = 11142220
-export const CREATOR_ADDRESS = "YOUR_WALLET_ADDRESS_HERE" as const
+// Contract addresses on CELO
+// Alfajores testnet cUSD: 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1
+// CELO mainnet cUSD: 0x765DE816845861e75A25fCA122bb6bEB168b3DF4
 
-// Mock Donny game contract address (replace with actual deployed contract)
-export const DONNY_GAME_ADDRESS = "0x0000000000000000000000000000000000000000" as const
+export const CUSD_ADDRESS_ALFAJORES = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1" as const
+export const CUSD_ADDRESS_CELO = "0x765DE816845861e75A25fCA122bb6bEB168b3DF4" as const
+
+// CELO network IDs
+export const CELO_ALFAJORES_CHAIN_ID = 44787
+export const CELO_MAINNET_CHAIN_ID = 42220
+
+// Donny game contract address (update after deployment)
+export const DONNY_GAME_ADDRESS = process.env.NEXT_PUBLIC_DONNY_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000" as const
+
+// Charity wallet address
+export const CHARITY_WALLET = process.env.NEXT_PUBLIC_CHARITY_WALLET || "0x0000000000000000000000000000000000000000" as const
 
 // USDC Contract ABI (ERC20 standard)
 export const USDC_ABI = [
@@ -34,7 +43,7 @@ export const USDC_ABI = [
   },
 ] as const
 
-// Donny Game Contract ABI (mock - replace with actual ABI)
+// Donny Game Contract ABI
 export const DONNY_GAME_ABI = [
   {
     inputs: [],
@@ -52,14 +61,22 @@ export const DONNY_GAME_ABI = [
   },
   {
     inputs: [],
-    name: "getCurrentRound",
+    name: "settleRound",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getRoundInfo",
     outputs: [
-      { name: "roundId", type: "uint256" },
-      { name: "startTime", type: "uint256" },
-      { name: "endTime", type: "uint256" },
-      { name: "totalPool", type: "uint256" },
-      { name: "entryFee", type: "uint256" },
-      { name: "isActive", type: "bool" },
+      { name: "_roundStartTime", type: "uint256" },
+      { name: "_roundEndTime", type: "uint256" },
+      { name: "_prizePool", type: "uint256" },
+      { name: "_donationPool", type: "uint256" },
+      { name: "_totalEntries", type: "uint256" },
+      { name: "_isActive", type: "bool" },
+      { name: "_isSettled", type: "bool" },
     ],
     stateMutability: "view",
     type: "function",
@@ -72,12 +89,33 @@ export const DONNY_GAME_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "getLeaderboard",
+    inputs: [{ name: "topN", type: "uint256" }],
+    name: "getTopPlayers",
     outputs: [
       { name: "addresses", type: "address[]" },
-      { name: "taps", type: "uint256[]" },
+      { name: "tapCounts", type: "uint256[]" },
     ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getAllParticipants",
+    outputs: [{ name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "", type: "address" }],
+    name: "hasEntered",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "", type: "address" }],
+    name: "taps",
+    outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
