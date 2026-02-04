@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  other: {
+    'fc:miniapp': 'https://donny.vercel.app',
+  },
 }
 
 export default function RootLayout({

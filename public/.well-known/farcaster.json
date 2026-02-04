@@ -1,18 +1,25 @@
 {
   "accountAssociation": {
-    "type": "farcaster",
-    "url": "https://donny.vercel.app"
+    "header": {
+      "alg": "ES256",
+      "typ": "JWT"
+    },
+    "payload": {
+      "type": "farcaster",
+      "url": "https://donny.vercel.app"
+    },
+    "signature": "PLACEHOLDER_SIGNATURE"
   },
   "frame": {
-    "version": "next",
+    "version": "1",
+    "name": "Donny - Tap to Earn for Good",
+    "iconUrl": "https://donny.vercel.app/icon.png",
+    "homeUrl": "https://donny.vercel.app",
     "imageUrl": "https://donny.vercel.app/og-image.png",
-    "button": {
-      "title": "Join & Tap",
-      "action": {
-        "type": "launch_frame",
-        "url": "https://donny.vercel.app"
-      }
-    }
+    "buttonTitle": "Join & Tap",
+    "splashImageUrl": "https://donny.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "requiredChains": ["eip155:42220"],
+    "requiredCapabilities": ["actions.signIn", "wallet.getEthereumProvider"]
   }
 }
-
