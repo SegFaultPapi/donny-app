@@ -62,60 +62,43 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Generate Frame HTML based on state
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://donny.vercel.app";
+    // Generate Open Graph HTML for embeds and social sharing
+    // Note: Mini Apps don't use Frame endpoints, but this is useful for OG tags
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://donny-app-rosy.vercel.app";
     const imageUrl = `${baseUrl}/api/frame/image?state=${roundState}`;
 
-    let html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta property="og:title" content="Donny - Tap-to-Earn for Good" />
-  <meta property="og:description" content="Compete in 24h tap-to-earn rounds. 60% prizes, 40% charity donations on CELO." />
-  <meta property="og:image" content="${imageUrl}" />
-  <meta property="fc:frame" content="vNext" />
-  <meta property="fc:frame:image" content="${imageUrl}" />
-`;
-
+    // Build description based on round state
+    let description = "Compete in 24h tap-to-earn rounds. 60% prizes, 40% charity donations on CELO.";
     if (roundState === "active_round" && roundInfo) {
       const hours = Math.floor(roundInfo.timeRemaining / 3600);
       const minutes = Math.floor((roundInfo.timeRemaining % 3600) / 60);
-      const seconds = roundInfo.timeRemaining % 60;
-      const timeStr = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-
-      html += `
-  <meta property="fc:frame:button:1" content="Join & Tap (2 cUSD)" />
-  <meta property="fc:frame:button:1:action" content="launch_frame" />
-  <meta property="fc:frame:button:1:target" content="${baseUrl}" />
-  <meta property="fc:frame:button:2" content="View Leaderboard" />
-  <meta property="fc:frame:button:2:action" content="link" />
-  <meta property="fc:frame:button:2:target" content="${baseUrl}/tapping" />
-`;
+      description = `Active round! Prize Pool: ${roundInfo.prizePool} cUSD | ${roundInfo.totalEntries} players | ${hours}h ${minutes}m remaining`;
     } else if (roundState === "round_finished") {
-      html += `
-  <meta property="fc:frame:button:1" content="View Results" />
-  <meta property="fc:frame:button:1:action" content="link" />
-  <meta property="fc:frame:button:1:target" content="${baseUrl}/results" />
-`;
-    } else {
-      html += `
-  <meta property="fc:frame:button:1" content="Next Round Soon" />
-  <meta property="fc:frame:button:1:action" content="link" />
-  <meta property="fc:frame:button:1:target" content="${baseUrl}" />
-`;
+      description = "Round finished! Check results and see who won.";
     }
 
-    html += `</head>
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Donny - Tap-to-Earn for Good</title>
+  <meta property="og:title" content="Donny - Tap-to-Earn for Good" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:url" content="${baseUrl}" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Donny - Tap-to-Earn for Good" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${imageUrl}" />
+  <!-- Mini App meta tag -->
+  <meta property="fc:miniapp" content="${baseUrl}" />
+  <meta http-equiv="refresh" content="0; url=${baseUrl}" />
+</head>
 <body>
   <h1>Donny - Tap-to-Earn for Good</h1>
-  ${roundState === "active_round" && roundInfo ? `
-    <p>Prize Pool: ${roundInfo.prizePool} cUSD</p>
-    <p>Players: ${roundInfo.totalEntries}</p>
-    <p>Time Remaining: ${Math.floor(roundInfo.timeRemaining / 3600)}h ${Math.floor((roundInfo.timeRemaining % 3600) / 60)}m</p>
-  ` : roundState === "round_finished" ? `
-    <p>Round finished! Check results.</p>
-  ` : `
-    <p>No active round. Next round starting soon!</p>
-  `}
+  <p>${description}</p>
+  <p><a href="${baseUrl}">Open Mini App</a></p>
 </body>
 </html>`;
 

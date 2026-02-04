@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   other: {
-    'fc:miniapp': 'https://donny.vercel.app',
+    'fc:miniapp': 'https://donny-app-rosy.vercel.app',
   },
 }
 
