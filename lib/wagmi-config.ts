@@ -1,6 +1,6 @@
 import { createConfig, http } from "wagmi"
 import { injected } from "wagmi/connectors"
-import { miniapp } from "@farcaster/miniapp-wagmi-connector"
+import farcasterMiniApp from "@farcaster/miniapp-wagmi-connector"
 
 export const celoSepolia = {
   id: 11142220,
@@ -50,7 +50,7 @@ export const config = createConfig({
   chains: [chain],
   connectors: [
     // Farcaster Mini App connector (prioritized when in Mini App context)
-    miniapp(),
+    farcasterMiniApp(),
     // Fallback to injected connector for regular web usage
     injected(),
   ],

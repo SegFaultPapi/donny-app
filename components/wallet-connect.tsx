@@ -37,9 +37,9 @@ export function WalletConnect() {
     )
   }
 
-  // In Mini App, prioritize the miniapp connector
+  // In Mini App, prioritize the farcaster miniapp connector
   const connector = isMiniApp 
-    ? connectors.find(c => c.id === "miniapp") || connectors[0]
+    ? connectors.find(c => c.id === "farcasterMiniApp" || c.id === "farcasterFrame") || connectors[0]
     : connectors[0]
 
   return (
