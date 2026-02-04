@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "type": "farcaster",
+    "url": "https://donny.vercel.app"
+  },
+  "frame": {
+    "version": "next",
+    "imageUrl": "https://donny.vercel.app/og-image.png",
+    "button": {
+      "title": "Join & Tap",
+      "action": {
+        "type": "launch_frame",
+        "url": "https://donny.vercel.app"
+      }
+    }
+  }
+}
+

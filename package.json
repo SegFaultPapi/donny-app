@@ -16,6 +16,7 @@
     "verify:celo": "hardhat verify --network celo"
   },
   "dependencies": {
+    "@farcaster/miniapp-sdk": "^0.2.2",
     "@hookform/resolvers": "^3.10.0",
     "@openzeppelin/contracts": "^5.4.0",
     "@radix-ui/react-accordion": "1.2.2",
