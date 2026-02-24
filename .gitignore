@@ -40,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Hardhat (removed; using Foundry)
+/artifacts
+/cache
+
+# Foundry
+/out
+/lib/forge-std
+.cache

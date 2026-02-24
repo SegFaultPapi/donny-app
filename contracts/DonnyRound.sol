@@ -11,7 +11,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
  * @dev Tap-to-earn game contract with charity donations on CELO
  * Entry fee: 2 cUSD
  * Split: 60% prize pool, 40% charity
- * Rate limit: 600 taps/min per wallet, 100ms cooldown
+ * Rate limit: 600 taps/min per wallet. Cooldown: 1s on-chain (block.timestamp precision);
+ *            100ms can be enforced in the UI for smoother UX.
  */
 contract DonnyRound is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -103,8 +104,10 @@ contract DonnyRound is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Tap to increment tap count
-     * Rate limit: 600 taps/min, 100ms cooldown
+     * @dev Tap to increment tap count.
+     * Rate limit: 600 taps/min per wallet.
+     * Cooldown on-chain: 1 second (block.timestamp has 1s precision).
+     * The UI may enforce a 100ms cooldown for better UX; the contract enforces 1s.
      */
     function tap() external nonReentrant {
         require(hasEntered[msg.sender], "Not entered");
@@ -123,9 +126,8 @@ contract DonnyRound is Ownable, ReentrancyGuard {
         // Check rate limit (600 taps/min)
         require(tapsInCurrentMinute[msg.sender] < MAX_TAPS_PER_MINUTE, "Rate limit exceeded");
         
-        // Check cooldown (1 second minimum between taps)
-        // Note: block.timestamp has 1 second precision, so we use 1 second cooldown
-        // For true 100ms cooldown, we'd need off-chain rate limiting or a different approach
+        // Check cooldown (1 second minimum between taps on-chain)
+        // EVM block.timestamp has 1s precision; UI can enforce 100ms for smoother UX
         require(
             block.timestamp >= lastTapTimestamp[msg.sender] + 1,
             "Cooldown active"
@@ -197,6 +199,12 @@ contract DonnyRound is Ownable, ReentrancyGuard {
             firstPrize = (prizePool * FIRST_PLACE_PERCENTAGE) / 100;
             secondPrize = (prizePool * SECOND_PLACE_PERCENTAGE) / 100;
             thirdPrize = (prizePool * THIRD_PLACE_PERCENTAGE) / 100;
+            // Assign any dust from integer division to first place (no leftover in contract)
+            uint256 totalPaid = firstPrize + secondPrize + thirdPrize;
+            uint256 remainder = prizePool - totalPaid;
+            if (remainder > 0 && firstPlace != address(0)) {
+                firstPrize += remainder;
+            }
         }
         
         // Distribute prizes
