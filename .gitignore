@@ -49,3 +49,6 @@ next-env.d.ts
 /out
 /lib/forge-std
 .cache
+/cache
+/broadcast
+deploy.sh

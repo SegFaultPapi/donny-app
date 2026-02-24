@@ -41,7 +41,7 @@ Con Foundry:
 forge verify-contract --chain-id 44787 CONTRACT_ADDRESS src/DonnyRound.sol:DonnyRound --constructor-args $(cast abi-encode "constructor(address,address)" $CUSD_ADDRESS $CHARITY_WALLET)
 ```
 
-(O el comando equivalente según la versión de `forge verify-contract` y la ruta de los contratos.)
+---
 
 ## Tests
 
@@ -50,3 +50,18 @@ Los tests de contratos se ejecutarán con Foundry:
 ```bash
 forge test
 ```
+
+(O el comando equivalente según la versión de `forge verify-contract` y la ruta de los contratos.)
+
+## 5. Variables de entorno (resumen)
+
+| Variable           | Uso con keystore     | Uso con private key |
+|--------------------|----------------------|----------------------|
+| `ETH_RPC_URL`      | Sí                   | Sí                   |
+| `CUSD_ADDRESS`     | Sí (Alfajores: ver arriba) | Sí          |
+| `CHARITY_WALLET`   | Sí                   | Sí                   |
+| `KEYSTORE_PASSWORD` o `--password-file` | Sí (para keystore) | No  |
+| `PRIVATE_KEY`      | No                   | Sí                   |
+| `CELOSCAN_API_KEY` | Opcional (verificación) | Opcional         |
+
+Ver `.env.example` para una plantilla.
