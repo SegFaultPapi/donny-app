@@ -1,5 +1,5 @@
 import { createConfig, http } from "wagmi"
-import { injected } from "wagmi/connectors"
+import { injected, walletConnect } from "wagmi/connectors"
 import farcasterMiniApp from "@farcaster/miniapp-wagmi-connector"
 
 export const celoSepolia = {
@@ -46,13 +46,18 @@ export const celo = {
 // Use Alfajores for testnet, CELO for mainnet
 const chain = process.env.NEXT_PUBLIC_CHAIN === "mainnet" ? celo : celoAlfajores
 
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
+
 export const config = createConfig({
   chains: [chain],
   connectors: [
-    // Farcaster Mini App connector (prioritized when in Mini App context)
+    // Farcaster Mini App connector (used when in Farcaster client)
     farcasterMiniApp(),
-    // Fallback to injected connector for regular web usage
+    // Web: injected (MetaMask, etc.) and WalletConnect
     injected(),
+    ...(projectId
+      ? [walletConnect({ projectId, showQrModal: true })]
+      : []),
   ],
   transports: {
     [chain.id]: http(),

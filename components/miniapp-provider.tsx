@@ -29,24 +29,16 @@ export function MiniappProvider({ children }: MiniappProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Detect if we're running inside a Farcaster Mini App
-    const checkMiniApp = () => {
-      try {
-        // Check if SDK is available (indicates we're in a Mini App context)
-        if (typeof window !== "undefined" && sdk) {
-          setIsMiniApp(true)
-          return true
-        }
-      } catch (error) {
-        // SDK not available, not in Mini App context
-        setIsMiniApp(false)
-        return false
-      }
-      return false
-    }
-
     const initializeMiniApp = async () => {
-      const inMiniApp = checkMiniApp()
+      let inMiniApp = false
+      try {
+        // Only true when actually embedded in Farcaster (Warpcast, etc.), not in a normal browser tab
+        if (typeof window !== "undefined" && sdk?.isInMiniApp) {
+          inMiniApp = await sdk.isInMiniApp()
+        }
+      } catch {
+        inMiniApp = false
+      }
       setIsMiniApp(inMiniApp)
 
       if (inMiniApp) {
