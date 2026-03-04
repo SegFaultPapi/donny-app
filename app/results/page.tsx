@@ -4,6 +4,7 @@ import { WalletConnect } from "@/components/wallet-connect"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { Heart, Trophy, ExternalLink, ArrowLeft, Share2 } from "lucide-react"
 import Link from "next/link"
 
@@ -26,7 +27,18 @@ export default function ResultsPage() {
   const userPrize = 300
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      <FlickeringGrid
+        className="fixed inset-0 z-0 h-screen w-screen opacity-70 [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,white_0%,transparent_75%)]"
+        squareSize={4}
+        gridGap={6}
+        color="rgb(251, 204, 92)"
+        maxOpacity={0.4}
+        flickerChance={0.12}
+      />
+
+      {/* Content */}
+      <div className="relative z-10">
       {/* Header - Mobile First */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 py-3">
@@ -199,6 +211,7 @@ export default function ResultsPage() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   )
 }

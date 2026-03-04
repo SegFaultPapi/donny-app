@@ -1,21 +1,24 @@
 "use client"
 
-import { useEffect } from "react"
-
-import { useState } from "react"
-
+import { useEffect, useState } from "react"
 import { WalletConnect } from "@/components/wallet-connect"
 import { EntryModal } from "@/components/entry-modal"
+import { SignInWithFarcasterGate } from "@/components/sign-in-with-farcaster"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { useAccount } from "wagmi"
+import { useMiniapp } from "@/components/miniapp-provider"
+import { useProfile } from "@farcaster/auth-kit"
 import { Heart, Trophy, Users, Clock } from "lucide-react"
 
 export default function Home() {
   const { isConnected } = useAccount()
   const [showEntryModal, setShowEntryModal] = useState(false)
+  const { isMiniApp, user: miniappUser } = useMiniapp()
+  const { isAuthenticated, profile } = useProfile()
+  const isSignedIn = isMiniApp ? !!miniappUser : isAuthenticated
 
   // Auto-open modal when wallet connects
   useEffect(() => {
@@ -25,6 +28,7 @@ export default function Home() {
   }, [isConnected])
 
   return (
+    <SignInWithFarcasterGate>
     <div className="relative min-h-screen bg-background">
       {/* Flickering Grid Background */}
       <FlickeringGrid
@@ -50,7 +54,14 @@ export default function Home() {
                 <p className="text-[10px] text-muted-foreground">Tap to Give</p>
               </div>
             </div>
-            <WalletConnect />
+            <div className="flex items-center gap-2">
+              {isSignedIn && (miniappUser?.username ?? profile?.username) && (
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  @{miniappUser?.username ?? profile?.username}
+                </span>
+              )}
+              <WalletConnect />
+            </div>
           </div>
         </header>
 
@@ -194,5 +205,6 @@ export default function Home() {
       <EntryModal open={showEntryModal} onOpenChange={setShowEntryModal} />
       </div>
     </div>
+    </SignInWithFarcasterGate>
   )
 }

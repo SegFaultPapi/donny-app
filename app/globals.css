@@ -270,3 +270,8 @@
 .slide-in-from-right-2 {
   animation-name: slide-in-from-right;
 }
+
+/* Sign in with Farcaster: keep Farcaster purple on the button */
+.sign-in-farcaster-wrapper button {
+  font-family: var(--font-sans) !important;
+}

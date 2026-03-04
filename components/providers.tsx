@@ -6,6 +6,7 @@ import { WagmiProvider } from "wagmi"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { config } from "@/lib/wagmi-config"
 import { MiniappProvider } from "@/components/miniapp-provider"
+import { FarcasterAuthProvider } from "@/components/farcaster-auth-provider"
 import { useState } from "react"
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,11 +14,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <MiniappProvider>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </WagmiProvider>
+      <FarcasterAuthProvider>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </WagmiProvider>
+      </FarcasterAuthProvider>
     </MiniappProvider>
   )
 }
