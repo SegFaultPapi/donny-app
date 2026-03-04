@@ -188,19 +188,13 @@ export default function Home() {
                   </div>
                 </div>
 
-                {isConnected ? (
-                  <Button 
-                    size="lg" 
-                    className="h-14 w-full text-base font-bold uppercase tracking-wide"
-                    onClick={() => setShowEntryModal(true)}
-                  >
-                    Enter Round
-                  </Button>
-                ) : (
-                  <Button size="lg" className="h-14 w-full text-base font-bold uppercase tracking-wide" disabled>
-                    Connect Wallet
-                  </Button>
-                )}
+                <Button 
+                  size="lg" 
+                  className="h-14 w-full text-base font-bold uppercase tracking-wide"
+                  onClick={() => setShowEntryModal(true)}
+                >
+                  Join current round
+                </Button>
               </CardContent>
             </Card>
 
