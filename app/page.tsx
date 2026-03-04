@@ -10,15 +10,31 @@ import { Badge } from "@/components/ui/badge"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { useAccount } from "wagmi"
 import { useMiniapp } from "@/components/miniapp-provider"
-import { useProfile } from "@farcaster/auth-kit"
-import { Heart, Trophy, Users, Clock } from "lucide-react"
+import { useProfile, useSignIn } from "@farcaster/auth-kit"
+import { Heart, Trophy, Users, Clock, User, LogOut } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Home() {
   const { isConnected } = useAccount()
   const [showEntryModal, setShowEntryModal] = useState(false)
   const { isMiniApp, user: miniappUser } = useMiniapp()
   const { isAuthenticated, profile } = useProfile()
+  const { signOut: authKitSignOut } = useSignIn({})
   const isSignedIn = isMiniApp ? !!miniappUser : isAuthenticated
+
+  const handleSignOut = () => {
+    if (isMiniApp) {
+      window.location.reload()
+      return
+    }
+    authKitSignOut()
+  }
 
   // Auto-open modal when wallet connects
   useEffect(() => {
@@ -55,12 +71,41 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {isSignedIn && (miniappUser?.username ?? profile?.username) && (
-                <span className="text-xs text-muted-foreground hidden sm:inline">
-                  @{miniappUser?.username ?? profile?.username}
-                </span>
+              {isSignedIn ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 min-w-0 rounded-lg p-1 -m-1 hover:bg-muted/80 transition-colors outline-none focus-visible:ring-2 ring-ring"
+                    >
+                      <Avatar className="h-8 w-8 shrink-0 ring-2 ring-border">
+                        {(miniappUser?.pfpUrl ?? profile?.pfpUrl) ? (
+                          <AvatarImage
+                            src={miniappUser?.pfpUrl ?? profile?.pfpUrl}
+                            alt={miniappUser?.displayName ?? profile?.displayName ?? "Farcaster user"}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                          {(miniappUser?.displayName ?? profile?.displayName ?? miniappUser?.username ?? profile?.username)
+                            ?.slice(0, 2)
+                            .toUpperCase() ?? <User className="h-4 w-4" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium text-foreground truncate max-w-[100px] sm:max-w-[140px]" title={miniappUser?.username ?? profile?.username ? `@${miniappUser?.username ?? profile?.username}` : undefined}>
+                        {miniappUser?.displayName ?? profile?.displayName ?? `@${miniappUser?.username ?? profile?.username ?? "user"}`}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" sideOffset={8}>
+                    <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-muted-foreground">
+                      <LogOut className="h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <WalletConnect />
               )}
-              <WalletConnect />
             </div>
           </div>
         </header>

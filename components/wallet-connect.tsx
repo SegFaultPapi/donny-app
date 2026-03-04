@@ -32,11 +32,6 @@ export function WalletConnect() {
   if (isConnected && address) {
     return (
       <div className="flex items-center gap-2">
-        {isMiniApp && user && (
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            @{user.username || `fid:${user.fid}`}
-          </span>
-        )}
         <Button
           onClick={() => disconnect()}
           variant="outline"
