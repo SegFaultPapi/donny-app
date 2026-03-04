@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { SignInButton, useProfile } from "@farcaster/auth-kit"
 import { useMiniapp } from "@/components/miniapp-provider"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
@@ -10,8 +11,13 @@ import { Heart, Smartphone } from "lucide-react"
  * On web: if not authenticated, show "Sign in with Farcaster" screen (QR / Warpcast, etc.).
  */
 export function SignInWithFarcasterGate({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
   const { isMiniApp, user: miniappUser } = useMiniapp()
   const { isAuthenticated, profile } = useProfile()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const isSignedIn = isMiniApp ? !!miniappUser : isAuthenticated
 
@@ -20,6 +26,7 @@ export function SignInWithFarcasterGate({ children }: { children: React.ReactNod
   }
 
   // Web: "Sign in with Farcaster" screen (QR / Warpcast)
+  // SignInButton only after mount to avoid hydration mismatch (AuthKit generates different IDs on server vs client)
   return (
     <div className="relative min-h-screen bg-background flex flex-col">
       <FlickeringGrid
@@ -61,13 +68,15 @@ export function SignInWithFarcasterGate({ children }: { children: React.ReactNod
                 </p>
               </div>
 
-              {/* AuthKit button: Farcaster purple (default AuthKit style) */}
-              <div className="sign-in-farcaster-wrapper [&_button]:!h-12 [&_button]:!w-full [&_button]:!rounded-lg [&_button]:!font-semibold [&_button]:!text-base">
-                <SignInButton
-                  onSuccess={({ username }) => {
-                    if (username) console.log("Signed in:", username)
-                  }}
-                />
+              {/* AuthKit button: only render on client to avoid hydration mismatch (AuthKit SVG IDs differ server vs client) */}
+              <div className="sign-in-farcaster-wrapper [&_button]:!h-12 [&_button]:!w-full [&_button]:!rounded-lg [&_button]:!font-semibold [&_button]:!text-base min-h-12">
+                {mounted && (
+                  <SignInButton
+                    onSuccess={({ username }) => {
+                      if (username) console.log("Signed in:", username)
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
