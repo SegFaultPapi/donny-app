@@ -275,3 +275,60 @@
 .sign-in-farcaster-wrapper button {
   font-family: var(--font-sans) !important;
 }
+
+/* Sign in with Farcaster: modal/QR dropdown — dark theme and app styles */
+/* Overlay (backdrop) */
+.nao3n42 {
+  background: rgba(0, 0, 0, 0.75) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+/* Modal content container */
+.nao3n43 {
+  max-width: min(405px, calc(100vw - 2rem));
+}
+/* Modal panel (card with title, QR, text) */
+._1sj0tk80 {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 1.5rem !important;
+  font-family: var(--font-sans) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+/* Modal title */
+._1sj0tk81 {
+  color: var(--foreground) !important;
+  line-height: 1.35 !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+}
+/* Modal description / subtitle */
+._1sj0tk82 {
+  color: var(--muted-foreground) !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.4 !important;
+}
+/* Link (e.g. "Open in Warpcast") */
+._1sj0tk83 {
+  color: var(--primary) !important;
+  text-decoration: none !important;
+}
+._1sj0tk83:hover {
+  text-decoration: underline !important;
+}
+/* Extra text below */
+._1sj0tk84 {
+  color: var(--muted-foreground) !important;
+  font-size: 0.9375rem !important;
+  margin-top: 0.5rem !important;
+}
+/* QR code container: no se modifica, queda como AuthKit */
+/* Fixed bottom panel (if used) */
+._8rz8bk0 {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import "@farcaster/auth-kit/styles.css"
+import "@/app/siwf-modal-overrides.css"
 import { AuthKitProvider as FarcasterAuthKitProvider } from "@farcaster/auth-kit"
 
 function getAuthConfig() {
