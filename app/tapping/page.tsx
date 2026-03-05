@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { Heart, Clock, Trophy, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { toast } from "sonner"
 import { useAccount, useReadContract, useWriteContract } from "wagmi"
 import { formatEther } from "viem"
 import { DONNY_GAME_ADDRESS, DONNY_GAME_ABI } from "@/lib/contracts"
@@ -115,9 +116,14 @@ export default function TappingPage() {
           functionName: "tap",
         })
         refetchAll()
-      } catch {
-        // User rejected or tx failed; refetch to stay in sync
+        toast.success("+1 tap", { duration: 1500 })
+      } catch (err) {
         refetchAll()
+        const message = err instanceof Error ? err.message : "Transaction failed"
+        const isRejected = message.toLowerCase().includes("reject") || message.toLowerCase().includes("denied")
+        toast.error(isRejected ? "Transaction cancelled" : "Tap failed", {
+          description: isRejected ? "You can try again whenever you're ready." : message,
+        })
       }
     },
     [address, writeContractAsync, refetchAll]

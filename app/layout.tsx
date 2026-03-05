@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Space_Grotesk, Geist_Mono, EB_Garamond } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'sonner'
 import { Providers } from '@/components/providers'
 import './globals.css'
 
@@ -46,6 +47,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <Toaster theme="dark" richColors position="top-center" closeButton />
         <Analytics />
       </body>
     </html>

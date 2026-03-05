@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -61,9 +62,12 @@ export function EntryModal({ open, onOpenChange }: EntryModalProps) {
         functionName: "enterRound",
       })
       onOpenChange(false)
+      toast.success("You're in!", { description: "Redirecting to the game..." })
       router.push("/tapping")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Transaction failed")
+      const message = err instanceof Error ? err.message : "Transaction failed"
+      setError(message)
+      toast.error("Entry failed", { description: message })
     } finally {
       setIsProcessing(false)
     }
