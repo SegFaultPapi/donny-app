@@ -1,17 +1,16 @@
-# Deploy en CELO Alfajores (testnet)
+# Deploy en CELO: Celo Sepolia (testnet) y CELO mainnet
 
-Instrucciones para desplegar el contrato DonnyRound en Celo Alfajores con Foundry.
+Instrucciones para desplegar el contrato **DonnyRound** en CELO con Foundry.
 
-## 1. Wallet para deploy
+## 1. Requisitos
 
-Necesitas una wallet con:
+- **Foundry** instalado (`forge --version`). Si no: `curl -L https://foundry.paradigm.xyz | bash` y `foundryup`.
+- Wallet con **CELO** para gas:
+  - **Celo Sepolia (testnet, recomendado)**: faucet activo en https://faucet.celo.org/celo-sepolia o https://cloud.google.com/application/web3/faucet/celo/sepolia  
+  - **Alfajores**: faucet a veces caído; solo si necesitas esa red.  
+  - **Mainnet**: CELO real en tu wallet.
 
-- **CELO** (para gas) en Alfajores. Conseguir en: https://faucet.celo.org/alfajores  
-- Opcional: **cUSD** si quieres probar el flujo completo (el contrato usa la dirección de cUSD de la red).
-
-## 2. Variables de entorno
-
-Copia el ejemplo y rellena los valores:
+## 2. Configurar entorno
 
 ```bash
 cp .env.example .env
@@ -19,73 +18,96 @@ cp .env.example .env
 
 Edita `.env`:
 
-- **PRIVATE_KEY**: clave privada de la wallet (con `0x`). Solo para deploy; no la compartas ni la subas a git.
-- **CUSD_ADDRESS**: en Alfajores es `0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1`.
-- **CHARITY_WALLET**: dirección que recibirá el 40% de donaciones (puedes usar tu wallet para pruebas).
+| Variable | Celo Sepolia (testnet) | Alfajores | CELO mainnet |
+|----------|------------------------|-----------|--------------|
+| `PRIVATE_KEY` | Tu clave (con `0x`) | Igual | Igual |
+| `CUSD_ADDRESS` | `0x01C5C0122039549AD1493B8220cABEdD739BC44E` (USDC) | `0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1` | `0x765DE816845861e75A25fCA122bb6bEB168b3DF4` |
+| `CHARITY_WALLET` | Dirección que recibe el 40% | Igual | Igual |
 
-## 3. Deploy (Foundry)
+El frontend usa **Celo Sepolia** por defecto (chain id 11142220). Para mainnet pon `NEXT_PUBLIC_CHAIN=mainnet`.
 
-RPC de Alfajores (puedes usar la URL pública o una de Alchemy/QuickNode):
+## 3. Compilar y probar
 
 ```bash
-export ALFAJORES_RPC_URL=https://alfajores-forno.celo-testnet.org
+npm run forge:build
+npm run forge:test
+```
+
+## 4. Desplegar
+
+**Celo Sepolia (testnet, con faucet):**
+
+1. Fondear la wallet en https://faucet.celo.org/celo-sepolia (pega tu dirección).
+2. En `.env` deja `CUSD_ADDRESS=0x01C5C0122039549AD1493B8220cABEdD739BC44E`.
+3. Ejecutar:
+
+```bash
+export PRIVATE_KEY=0x...   # o: export $(grep -v '^#' .env | xargs)
+npm run deploy:sepolia
+```
+
+**Alfajores (alternativa):**
+
+```bash
+# En .env: CUSD_ADDRESS=0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1
 export PRIVATE_KEY=0x...
-export CUSD_ADDRESS=0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1
-export CHARITY_WALLET=0x...
+npm run deploy:alfajores
 ```
 
-Desplegar:
+**CELO mainnet:**
+
+En `.env`: `CUSD_ADDRESS=0x765DE816845861e75A25fCA122bb6bEB168b3DF4`. Luego:
 
 ```bash
-forge script script/Deploy.s.sol:DeployScript --rpc-url $ALFAJORES_RPC_URL --broadcast --private-key $PRIVATE_KEY
+export PRIVATE_KEY=0x...
+npm run deploy:celo
 ```
 
-Tras el deploy, copia la dirección del contrato e indica al frontend:
+Tras el deploy, configura el frontend:
 
 ```bash
-# En .env (o en tu plataforma de deploy)
-NEXT_PUBLIC_DONNY_CONTRACT_ADDRESS=0x...   # dirección impresa por forge script
-NEXT_PUBLIC_CHARITY_WALLET=0x...           # misma que CHARITY_WALLET si quieres mostrarla en UI
+NEXT_PUBLIC_DONNY_CONTRACT_ADDRESS=0x...   # la dirección que imprimió forge
+NEXT_PUBLIC_CHARITY_WALLET=0x...            # la misma que CHARITY_WALLET
 ```
 
-## 4. Verificar contrato en Celoscan
+## 5. Verificar contrato (opcional)
 
-Tras el deploy, verifica el contrato en [alfajores.celoscan.io](https://alfajores.celoscan.io) (opcional):
+**Celo Sepolia** (chain-id 11142220, Blockscout):
 
 ```bash
-export CONTRACT_ADDRESS=0x...   # la dirección desplegada
-export CUSD_ADDRESS=0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1
-export CHARITY_WALLET=0x...
+export CONTRACT_ADDRESS=0x...
+export CUSD=0x01C5C0122039549AD1493B8220cABEdD739BC44E
+export CHARITY=0x...
 
+forge verify-contract --chain-id 11142220 $CONTRACT_ADDRESS src/DonnyRound.sol:DonnyRound \
+  --constructor-args $(cast abi-encode "constructor(address,address)" $CUSD $CHARITY)
+```
+
+**Alfajores** (chain-id 44787):
+
+```bash
+export CUSD=0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1
 forge verify-contract --chain-id 44787 $CONTRACT_ADDRESS src/DonnyRound.sol:DonnyRound \
-  --constructor-args $(cast abi-encode "constructor(address,address)" $CUSD_ADDRESS $CHARITY_WALLET)
+  --constructor-args $(cast abi-encode "constructor(address,address)" $CUSD $CHARITY)
 ```
 
-Si Celoscan pide API key, configura `CELOSCAN_API_KEY` en `.env` y usa `--etherscan-api-key $CELOSCAN_API_KEY`.
-
-## 5. Tests
-
-Ejecutar tests de DonnyRound:
+**Mainnet** (chain-id 42220):
 
 ```bash
-forge test --match-path test/DonnyRound.t.sol -vv
+export CUSD=0x765DE816845861e75A25fCA122bb6bEB168b3DF4
+forge verify-contract --chain-id 42220 $CONTRACT_ADDRESS src/DonnyRound.sol:DonnyRound \
+  --constructor-args $(cast abi-encode "constructor(address,address)" $CUSD $CHARITY) \
+  --etherscan-api-key $CELOSCAN_API_KEY
 ```
 
-Todos los tests del proyecto:
+## 6. Resumen
 
-```bash
-forge test
-```
+| Acción | Comando |
+|--------|---------|
+| Compilar | `npm run forge:build` |
+| Tests | `npm run forge:test` |
+| **Deploy Celo Sepolia** | Fondear en [faucet.celo.org/celo-sepolia](https://faucet.celo.org/celo-sepolia) → `npm run deploy:sepolia` |
+| Deploy Alfajores | `npm run deploy:alfajores` |
+| Deploy CELO mainnet | `CUSD_ADDRESS=0x765...` en .env + `npm run deploy:celo` |
 
-## 6. Variables de entorno (resumen)
-
-| Variable           | Uso con keystore     | Uso con private key |
-|--------------------|----------------------|----------------------|
-| `ETH_RPC_URL`      | Sí                   | Sí                   |
-| `CUSD_ADDRESS`     | Sí (Alfajores: ver arriba) | Sí          |
-| `CHARITY_WALLET`   | Sí                   | Sí                   |
-| `KEYSTORE_PASSWORD` o `--password-file` | Sí (para keystore) | No  |
-| `PRIVATE_KEY`      | No                   | Sí                   |
-| `CELOSCAN_API_KEY` | Opcional (verificación) | Opcional         |
-
-Ver `.env.example` para una plantilla.
+**Faucet Celo Sepolia:** https://faucet.celo.org/celo-sepolia

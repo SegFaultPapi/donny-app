@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPublicClient, http, formatEther } from "viem";
-import { celoAlfajores } from "viem/chains";
+import { celoSepolia } from "viem/chains";
 import { DONNY_GAME_ADDRESS, DONNY_GAME_ABI } from "@/lib/contracts";
 
-// Initialize public client for reading contract state
+// Public client: Celo Sepolia testnet (faucet activo)
 const publicClient = createPublicClient({
-  chain: celoAlfajores,
-  transport: http("https://alfajores-forno.celo-testnet.org"),
+  chain: celoSepolia,
+  transport: http("https://forno.celo-sepolia.celo-testnet.org"),
 });
 
 export async function GET(request: NextRequest) {
