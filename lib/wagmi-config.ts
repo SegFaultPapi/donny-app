@@ -10,7 +10,7 @@ export const celoSepolia = {
     default: { http: ["https://forno.celo-sepolia.celo-testnet.org"] },
   },
   blockExplorers: {
-    default: { name: "CeloScan", url: "https://sepolia.celoscan.io" },
+    default: { name: "Blockscout", url: "https://celo-sepolia.blockscout.com" },
   },
   testnet: true,
 } as const
@@ -43,8 +43,8 @@ export const celo = {
   testnet: false,
 } as const
 
-// Use Alfajores for testnet, CELO for mainnet
-const chain = process.env.NEXT_PUBLIC_CHAIN === "mainnet" ? celo : celoAlfajores
+// Use Celo Sepolia for testnet (faucet activo), CELO for mainnet
+const chain = process.env.NEXT_PUBLIC_CHAIN === "mainnet" ? celo : celoSepolia
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
 

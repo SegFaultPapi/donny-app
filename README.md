@@ -1,66 +1,51 @@
+# Donny – Tap-to-Earn for Good
+
+Juego tap-to-earn en CELO: pagas entrada (2 USDC), compites tappeando 24h, top 3 ganan premios y el 40% va a una charity verificada on-chain.
+
+---
+
+## Contrato desplegado (Celo Sepolia)
+
+| | |
+|--|--|
+| **DonnyRound** | `0x1e36560137C8EF4baeE5CBF5ef8Ede6E6275B3e4` |
+| **Red** | Celo Sepolia (chain id 11142220) |
+| **Explorer** | [Blockscout](https://celo-sepolia.blockscout.com/address/0x1e36560137C8EF4baeE5CBF5ef8Ede6E6275B3e4) (contrato verificado) |
+
+El frontend usa esta dirección si en `.env` está `NEXT_PUBLIC_DONNY_CONTRACT_ADDRESS=0x1e36560137C8EF4baeE5CBF5ef8Ede6E6275B3e4`.
+
+---
+
+## Desarrollo
+
+```bash
+npm install --legacy-peer-deps
+npm run dev
+```
+
+Deploy del contrato en Celo Sepolia: ver [docs/deploy-alfajores.md](docs/deploy-alfajores.md). Comando rápido:
+
+```bash
+export PRIVATE_KEY=0x...   # y CUSD_ADDRESS, CHARITY_WALLET en .env
+npm run deploy:sepolia
+```
+
+---
+
 ## Foundry
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**Foundry** es el toolkit usado para compilar y desplegar los contratos.
 
-Foundry consists of:
+- **Forge**: compilar y tests → `forge build`, `forge test`
+- **Deploy**: `npm run deploy:sepolia` (Celo Sepolia)
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Documentación: https://book.getfoundry.sh/
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
+### Comandos útiles
 
 ```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+forge build
+forge test --match-path test/DonnyRound.t.sol
+npm run deploy:sepolia   # Celo Sepolia
+npm run deploy:celo      # CELO mainnet
 ```

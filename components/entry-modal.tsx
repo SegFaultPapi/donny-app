@@ -19,9 +19,11 @@ import { parseUnits } from "viem"
 import {
   DONNY_GAME_ADDRESS,
   DONNY_GAME_ABI,
+  USDC_ADDRESS_CELO_SEPOLIA,
   CUSD_ADDRESS_ALFAJORES,
   CUSD_ADDRESS_CELO,
   USDC_ABI,
+  CELO_SEPOLIA_CHAIN_ID,
   CELO_ALFAJORES_CHAIN_ID,
 } from "@/lib/contracts"
 
@@ -40,7 +42,12 @@ export function EntryModal({ open, onOpenChange }: EntryModalProps) {
   const { address } = useAccount()
   const { writeContractAsync } = useWriteContract()
 
-  const cUSDAddress = chainId === CELO_ALFAJORES_CHAIN_ID ? CUSD_ADDRESS_ALFAJORES : CUSD_ADDRESS_CELO
+  const cUSDAddress =
+    chainId === CELO_SEPOLIA_CHAIN_ID
+      ? USDC_ADDRESS_CELO_SEPOLIA
+      : chainId === CELO_ALFAJORES_CHAIN_ID
+        ? CUSD_ADDRESS_ALFAJORES
+        : CUSD_ADDRESS_CELO
 
   const handleEnter = async () => {
     if (!address || DONNY_GAME_ADDRESS === "0x0000000000000000000000000000000000000000") {

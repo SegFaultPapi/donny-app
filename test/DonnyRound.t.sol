@@ -113,13 +113,16 @@ contract DonnyRoundTest is Test {
         vm.prank(carol);
         round.enterRound();
 
-        // Alice: 5 taps, Bob: 3, Carol: 1
-        vm.prank(alice);
+        // Alice: 5 taps, Bob: 3, Carol: 1 (startPrank so all taps in loop use same caller)
+        vm.startPrank(alice);
         for (uint256 i = 0; i < 5; i++) round.tap();
-        vm.prank(bob);
+        vm.stopPrank();
+        vm.startPrank(bob);
         for (uint256 i = 0; i < 3; i++) round.tap();
-        vm.prank(carol);
+        vm.stopPrank();
+        vm.startPrank(carol);
         round.tap();
+        vm.stopPrank();
 
         uint256 prizePool = round.prizePool();
         uint256 donationPool = round.donationPool();
@@ -207,10 +210,12 @@ contract DonnyRoundTest is Test {
         vm.prank(bob);
         round.enterRound();
 
-        vm.prank(alice);
+        vm.startPrank(alice);
         for (uint256 i = 0; i < 7; i++) round.tap();
-        vm.prank(bob);
+        vm.stopPrank();
+        vm.startPrank(bob);
         for (uint256 i = 0; i < 3; i++) round.tap();
+        vm.stopPrank();
 
         (address[] memory addresses, uint256[] memory tapCounts) = round.getTopPlayers(3);
         assertEq(addresses.length, 3);
