@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { WalletConnect } from "@/components/wallet-connect"
 import { EntryModal } from "@/components/entry-modal"
 import { SignInWithFarcasterGate } from "@/components/sign-in-with-farcaster"
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
-import { useAccount } from "wagmi"
+import { useAccount, useReadContract } from "wagmi"
 import { useMiniapp } from "@/components/miniapp-provider"
 import { useProfile, useSignIn } from "@farcaster/auth-kit"
 import { Heart, Trophy, Users, Clock, User, LogOut } from "lucide-react"
@@ -19,14 +19,55 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { formatEther } from "viem"
+import { DONNY_GAME_ADDRESS, DONNY_GAME_ABI } from "@/lib/contracts"
+import Link from "next/link"
+
+function formatTimeRemaining(seconds: number): string {
+  if (seconds <= 0) return "0:00:00"
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+}
 
 export default function Home() {
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const [showEntryModal, setShowEntryModal] = useState(false)
+  const [tick, setTick] = useState(0)
   const { isMiniApp, user: miniappUser } = useMiniapp()
   const { isAuthenticated, profile } = useProfile()
   const { signOut: authKitSignOut } = useSignIn({})
   const isSignedIn = isMiniApp ? !!miniappUser : isAuthenticated
+
+  const { data: roundInfo } = useReadContract({
+    address: DONNY_GAME_ADDRESS as `0x${string}`,
+    abi: DONNY_GAME_ABI,
+    functionName: "getRoundInfo",
+  })
+  const { data: hasEntered } = useReadContract({
+    address: DONNY_GAME_ADDRESS as `0x${string}`,
+    abi: DONNY_GAME_ABI,
+    functionName: "hasEntered",
+    args: address ? [address] : undefined,
+  })
+
+  const [roundStartTime, roundEndTime, prizePool, donationPool, totalEntries, isActive, isSettled] = roundInfo ?? []
+  const timeRemaining = useMemo(
+    () => (roundEndTime !== undefined ? Math.max(0, Number(roundEndTime) - Math.floor(Date.now() / 1000)) : 0),
+    [roundEndTime, tick]
+  )
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1000)
+    return () => clearInterval(id)
+  }, [])
+  const noRound = roundStartTime !== undefined && Number(roundStartTime) === 0
+  const roundFinished = isSettled === true
+  const userAlreadyEntered = hasEntered === true
+
+  useEffect(() => {
+    if (isConnected && !userAlreadyEntered && !roundFinished && !noRound) setShowEntryModal(true)
+  }, [isConnected, userAlreadyEntered, roundFinished, noRound])
 
   const handleSignOut = () => {
     if (isMiniApp) {
@@ -36,12 +77,12 @@ export default function Home() {
     authKitSignOut()
   }
 
-  // Auto-open modal when wallet connects
-  useEffect(() => {
-    if (isConnected) {
-      setShowEntryModal(true)
-    }
-  }, [isConnected])
+  const prizePoolNum = prizePool != null ? Number(formatEther(prizePool)) : 0
+  const donationPoolNum = donationPool != null ? Number(formatEther(donationPool)) : 0
+  const totalEntriesNum = totalEntries != null ? Number(totalEntries) : 0
+  const firstPrize = totalEntriesNum >= 3 ? prizePoolNum * 0.5 : totalEntriesNum === 1 ? prizePoolNum : totalEntriesNum === 2 ? prizePoolNum * 0.7 : 0
+  const secondPrize = totalEntriesNum >= 2 ? (totalEntriesNum === 2 ? prizePoolNum * 0.3 : prizePoolNum * 0.3) : 0
+  const thirdPrize = totalEntriesNum >= 3 ? prizePoolNum * 0.2 : 0
 
   return (
     <SignInWithFarcasterGate>
@@ -116,7 +157,7 @@ export default function Home() {
             {/* Main Hero */}
             <div className="space-y-4 text-center">
               <Badge variant="outline" className="border-primary/40 bg-primary/5 text-primary text-xs font-medium px-3 py-1">
-                Round #1 Active
+                {noRound ? "No active round" : roundFinished ? "Round finished" : isActive ? "Round active" : "Waiting to start"}
               </Badge>
               <h2 className="font-serif text-5xl font-bold leading-[1.1] text-balance tracking-tight sm:text-6xl">
                 Tap to win.
@@ -132,19 +173,19 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-2">
               <Card className="border-primary/30 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-3 text-center space-y-1">
-                  <div className="font-serif text-2xl font-bold text-primary">$2.5k</div>
+                  <div className="font-serif text-2xl font-bold text-primary">{prizePoolNum > 0 ? prizePoolNum.toFixed(1) : "—"}</div>
                   <div className="text-[10px] uppercase tracking-wider leading-tight text-muted-foreground">Prize Pool</div>
                 </CardContent>
               </Card>
               <Card className="border-primary/30 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-3 text-center space-y-1">
-                  <div className="font-serif text-2xl font-bold text-foreground">47</div>
+                  <div className="font-serif text-2xl font-bold text-foreground">{totalEntriesNum}</div>
                   <div className="text-[10px] uppercase tracking-wider leading-tight text-muted-foreground">Players</div>
                 </CardContent>
               </Card>
               <Card className="border-primary/30 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-3 text-center space-y-1">
-                  <div className="font-serif text-2xl font-bold text-primary">$1k</div>
+                  <div className="font-serif text-2xl font-bold text-primary">{donationPoolNum > 0 ? donationPoolNum.toFixed(1) : "—"}</div>
                   <div className="text-[10px] uppercase tracking-wider leading-tight text-muted-foreground">Charity</div>
                 </CardContent>
               </Card>
@@ -155,28 +196,30 @@ export default function Home() {
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <h3 className="font-serif text-2xl font-bold text-foreground">Round #1</h3>
-                    <p className="text-sm text-muted-foreground">Entry fee: <span className="font-semibold text-primary">5 cUSD</span></p>
+                    <h3 className="font-serif text-2xl font-bold text-foreground">Current round</h3>
+                    <p className="text-sm text-muted-foreground">Entry fee: <span className="font-semibold text-primary">2 USDC</span></p>
                   </div>
-                  <Badge variant="secondary" className="gap-1.5 px-3 py-2 shrink-0 border border-border/50">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="font-mono text-sm font-bold">23:45:12</span>
-                  </Badge>
+                  {!noRound && (
+                    <Badge variant="secondary" className="gap-1.5 px-3 py-2 shrink-0 border border-border/50">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span className="font-mono text-sm font-bold">{formatTimeRemaining(timeRemaining)}</span>
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="space-y-3">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">🥇 First place</span>
-                      <span className="font-serif text-base font-bold text-foreground">$750</span>
+                      <span className="font-serif text-base font-bold text-foreground">{firstPrize > 0 ? firstPrize.toFixed(1) : "—"}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">🥈 Second place</span>
-                      <span className="font-serif text-base font-bold text-foreground">$450</span>
+                      <span className="font-serif text-base font-bold text-foreground">{secondPrize > 0 ? secondPrize.toFixed(1) : "—"}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">🥉 Third place</span>
-                      <span className="font-serif text-base font-bold text-foreground">$300</span>
+                      <span className="font-serif text-base font-bold text-foreground">{thirdPrize > 0 ? thirdPrize.toFixed(1) : "—"}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between border-t border-primary/30 pt-3 text-sm">
@@ -184,17 +227,27 @@ export default function Home() {
                       <Heart className="h-4 w-4 text-primary" fill="currentColor" />
                       Charity impact
                     </span>
-                    <span className="font-serif text-base font-bold text-primary">$1,000</span>
+                    <span className="font-serif text-base font-bold text-primary">{donationPoolNum > 0 ? donationPoolNum.toFixed(1) : "—"}</span>
                   </div>
                 </div>
 
-                <Button 
-                  size="lg" 
-                  className="h-14 w-full text-base font-bold uppercase tracking-wide"
-                  onClick={() => setShowEntryModal(true)}
-                >
-                  Join current round
-                </Button>
+                {roundFinished ? (
+                  <Button size="lg" className="h-14 w-full text-base font-bold uppercase tracking-wide" asChild>
+                    <Link href="/results">View results</Link>
+                  </Button>
+                ) : userAlreadyEntered && isActive ? (
+                  <Button size="lg" className="h-14 w-full text-base font-bold uppercase tracking-wide" asChild>
+                    <Link href="/tapping">Continue tapping</Link>
+                  </Button>
+                ) : noRound ? (
+                  <Button size="lg" className="h-14 w-full text-base font-bold uppercase tracking-wide" onClick={() => setShowEntryModal(true)}>
+                    Be the first — join round
+                  </Button>
+                ) : (
+                  <Button size="lg" className="h-14 w-full text-base font-bold uppercase tracking-wide" onClick={() => setShowEntryModal(true)}>
+                    Join current round
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -209,7 +262,7 @@ export default function Home() {
                   <div className="space-y-1 pt-1">
                     <h4 className="text-base font-bold text-foreground">Enter the round</h4>
                     <p className="text-sm leading-relaxed text-muted-foreground">
-                      Pay 5 cUSD to join the 24-hour competition
+                      Pay 2 USDC to join the 24-hour competition
                     </p>
                   </div>
                 </div>

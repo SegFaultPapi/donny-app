@@ -110,4 +110,6 @@ forge verify-contract --chain-id 42220 $CONTRACT_ADDRESS src/DonnyRound.sol:Donn
 | Deploy Alfajores | `npm run deploy:alfajores` |
 | Deploy CELO mainnet | `CUSD_ADDRESS=0x765...` en .env + `npm run deploy:celo` |
 
+**Deploy con verificación:** `deploy:sepolia` ya lleva `--verify`: tras desplegar, Foundry envía el contrato a Blockscout para verificación automática. Si falla la verificación, puedes hacerla a mano (sección 5).
+
 **Faucet Celo Sepolia:** https://faucet.celo.org/celo-sepolia

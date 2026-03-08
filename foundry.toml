@@ -10,3 +10,9 @@ remappings = [
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+# Verificación en Celo Sepolia (Blockscout) - opcional para deploy:sepolia --verify
+[etherscan.celo_sepolia]
+key = ""
+url = "https://celo-sepolia.blockscout.com/api"
+verifier = "blockscout"

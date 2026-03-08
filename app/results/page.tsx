@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { WalletConnect } from "@/components/wallet-connect"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -7,24 +8,57 @@ import { Badge } from "@/components/ui/badge"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { Heart, Trophy, ExternalLink, ArrowLeft, Share2 } from "lucide-react"
 import Link from "next/link"
+import { useAccount, useReadContract } from "wagmi"
+import { formatEther } from "viem"
+import { DONNY_GAME_ADDRESS, DONNY_GAME_ABI } from "@/lib/contracts"
+
+const EXPLORER_URL = "https://celo-sepolia.blockscout.com"
 
 export default function ResultsPage() {
-  // Mock results data
-  const winners = [
-    { rank: 1, address: "0x1234...5678", taps: 5420, prize: 750 },
-    { rank: 2, address: "0xabcd...efgh", taps: 4890, prize: 450 },
-    { rank: 3, address: "0x9876...4321", taps: 3256, prize: 300 },
-  ]
+  const { address } = useAccount()
 
-  const charityDonation = {
-    amount: 1000,
-    txHash: "0xabc123def456...",
-    charity: "charity: water",
-  }
+  const { data: roundInfo } = useReadContract({
+    address: DONNY_GAME_ADDRESS as `0x${string}`,
+    abi: DONNY_GAME_ABI,
+    functionName: "getRoundInfo",
+  })
+  const { data: topPlayersData } = useReadContract({
+    address: DONNY_GAME_ADDRESS as `0x${string}`,
+    abi: DONNY_GAME_ABI,
+    functionName: "getTopPlayers",
+    args: [BigInt(3)],
+  })
+  const { data: userTaps } = useReadContract({
+    address: DONNY_GAME_ADDRESS as `0x${string}`,
+    abi: DONNY_GAME_ABI,
+    functionName: "getUserTaps",
+    args: address ? [address] : undefined,
+  })
 
-  const userRank = 3
-  const userTaps = 3256
-  const userPrize = 300
+  const [, , , donationPool, totalEntries, , isSettled] = roundInfo ?? []
+  const donationPoolNum = donationPool != null ? Number(formatEther(donationPool)) : 0
+  const prizePoolNum = prizePool != null ? Number(formatEther(prizePool)) : 0
+  const totalEntriesNum = totalEntries != null ? Number(totalEntries) : 0
+
+  const winners = useMemo(() => {
+    if (!topPlayersData || !Array.isArray(topPlayersData)) return []
+    const [addresses, tapCounts] = topPlayersData
+    const addrs = addresses as readonly `0x${string}`[]
+    const taps = tapCounts as readonly bigint[]
+    let firstPrize = 0, secondPrize = 0, thirdPrize = 0
+    if (totalEntriesNum === 1) firstPrize = prizePoolNum
+    else if (totalEntriesNum === 2) { firstPrize = prizePoolNum * 0.7; secondPrize = prizePoolNum * 0.3 }
+    else if (totalEntriesNum >= 3) { firstPrize = prizePoolNum * 0.5; secondPrize = prizePoolNum * 0.3; thirdPrize = prizePoolNum * 0.2 }
+    const prizes = [firstPrize, secondPrize, thirdPrize]
+    return addrs
+      .map((addr, i) => ({ rank: i + 1, address: addr, taps: Number(taps[i] ?? 0), prize: prizes[i] ?? 0 }))
+      .filter((w) => w.address !== "0x0000000000000000000000000000000000000000")
+  }, [topPlayersData, totalEntriesNum, prizePoolNum])
+
+  const userTapsNum = userTaps !== undefined ? Number(userTaps) : 0
+  const userWinner = winners.find((w) => address && w.address.toLowerCase() === address.toLowerCase())
+  const userRank = userWinner?.rank ?? null
+  const userPrize = userWinner?.prize ?? 0
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -67,13 +101,17 @@ export default function ResultsPage() {
           {/* Congrats Banner - Mobile */}
           <div className="space-y-3 text-center">
             <Badge variant="outline" className="border-primary/50 text-primary text-xs">
-              Round #1 Complete
+              Round complete
             </Badge>
             <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
-              Congratulations!
+              {userRank != null ? "Congratulations!" : "Round results"}
             </h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              You finished <span className="font-bold text-primary">3rd</span> and won <span className="font-bold text-primary">$300</span>
+              {userRank != null ? (
+                <>You finished <span className="font-bold text-primary">#{userRank}</span> and won <span className="font-bold text-primary">{userPrize.toFixed(1)} USDC</span></>
+              ) : (
+                <>You made <span className="font-bold text-primary">{userTapsNum.toLocaleString()}</span> taps this round</>
+              )}
             </p>
           </div>
 
@@ -83,18 +121,18 @@ export default function ResultsPage() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="space-y-1.5">
                   <Trophy className="h-8 w-8 mx-auto text-orange-500" />
-                  <div className="text-3xl font-bold text-foreground">3rd</div>
+                  <div className="text-3xl font-bold text-foreground">{userRank ?? "—"}</div>
                   <div className="text-[10px] text-muted-foreground">Rank</div>
                 </div>
                 <div className="space-y-1.5">
                   <div className="text-[10px] text-muted-foreground">Taps</div>
-                  <div className="text-3xl font-bold text-primary">{userTaps.toLocaleString()}</div>
-                  <div className="text-[10px] text-muted-foreground">Great!</div>
+                  <div className="text-3xl font-bold text-primary">{userTapsNum.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground">Total</div>
                 </div>
                 <div className="space-y-1.5">
                   <div className="text-[10px] text-muted-foreground">Prize</div>
-                  <div className="text-3xl font-bold text-primary">${userPrize}</div>
-                  <div className="text-[10px] text-muted-foreground">20%</div>
+                  <div className="text-3xl font-bold text-primary">{userPrize > 0 ? `${userPrize.toFixed(1)}` : "—"}</div>
+                  <div className="text-[10px] text-muted-foreground">USDC</div>
                 </div>
               </div>
             </CardContent>
@@ -105,13 +143,16 @@ export default function ResultsPage() {
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-foreground">Top 3</h3>
-                <Badge variant="secondary" className="text-xs">47 Players</Badge>
+                <Badge variant="secondary" className="text-xs">{totalEntriesNum} Players</Badge>
               </div>
 
               <div className="space-y-2">
-                {winners.map((winner) => (
+                {winners.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No winners yet.</p>
+                ) : (
+                  winners.map((winner) => (
                   <div
-                    key={winner.rank}
+                    key={`${winner.address}-${winner.rank}`}
                     className={`flex items-center justify-between rounded-lg border p-3 ${
                       winner.rank === userRank
                         ? 'border-primary/50 bg-primary/5'
@@ -132,7 +173,7 @@ export default function ResultsPage() {
                       </div>
                       <div className="min-w-0 space-y-0.5">
                         <div className="text-sm font-semibold text-foreground">
-                          {winner.rank === userRank ? 'You' : winner.address}
+                          {winner.rank === userRank ? 'You' : `${winner.address.slice(0, 6)}...${winner.address.slice(-4)}`}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {winner.taps.toLocaleString()} taps
@@ -140,13 +181,14 @@ export default function ResultsPage() {
                       </div>
                     </div>
                     <div className="space-y-0.5 text-right">
-                      <div className="text-lg font-bold text-primary">${winner.prize}</div>
+                      <div className="text-lg font-bold text-primary">{winner.prize > 0 ? `${winner.prize.toFixed(1)}` : "—"}</div>
                       <div className="text-[10px] text-muted-foreground">
                         {winner.rank === 1 ? '50%' : winner.rank === 2 ? '30%' : '20%'}
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -161,26 +203,26 @@ export default function ResultsPage() {
 
               <div className="space-y-3">
                 <div className="space-y-1 text-center">
-                  <div className="text-4xl font-bold text-primary">${charityDonation.amount}</div>
+                  <div className="text-4xl font-bold text-primary">{donationPoolNum.toFixed(1)}</div>
                   <p className="text-xs text-muted-foreground">
-                    donated to <span className="font-semibold text-foreground">{charityDonation.charity}</span>
+                    USDC donated to charity wallet
                   </p>
                 </div>
 
                 <div className="space-y-2 rounded-lg border border-primary/30 bg-card/50 p-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Transaction</span>
+                    <span className="text-muted-foreground">Contract</span>
                     <Badge variant="outline" className="border-primary/50 text-primary text-[10px]">
-                      Verified
+                      On-chain
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <code className="min-w-0 flex-1 truncate text-[10px] font-mono text-foreground bg-muted px-2 py-1 rounded">
-                      {charityDonation.txHash}
+                      {DONNY_GAME_ADDRESS.slice(0, 10)}...{DONNY_GAME_ADDRESS.slice(-8)}
                     </code>
                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" asChild>
                       <a
-                        href={`https://sepolia.celoscan.io/tx/${charityDonation.txHash}`}
+                        href={`${EXPLORER_URL}/address/${DONNY_GAME_ADDRESS}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -191,7 +233,7 @@ export default function ResultsPage() {
                 </div>
 
                 <p className="text-xs leading-relaxed text-center text-muted-foreground text-pretty">
-                  40% of every prize pool goes to verified charities building clean water worldwide.
+                  40% of every entry goes to the charity wallet. 100% transparent on-chain.
                 </p>
               </div>
             </CardContent>

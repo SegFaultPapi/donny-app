@@ -11,7 +11,7 @@
     "forge:test": "forge test --match-path test/DonnyRound.t.sol",
     "deploy:alfajores": "forge script script/Deploy.s.sol:DeployScript --rpc-url https://alfajores-forno.celo-testnet.org --broadcast --private-key $PRIVATE_KEY",
     "deploy:celo": "forge script script/Deploy.s.sol:DeployScript --rpc-url https://forno.celo.org --broadcast --private-key $PRIVATE_KEY",
-    "deploy:sepolia": "forge script script/Deploy.s.sol:DeployScript --rpc-url https://forno.celo-sepolia.celo-testnet.org --broadcast --private-key $PRIVATE_KEY"
+    "deploy:sepolia": "forge script script/Deploy.s.sol:DeployScript --rpc-url https://forno.celo-sepolia.celo-testnet.org --broadcast --private-key $PRIVATE_KEY --verify --verifier blockscout --verifier-url https://celo-sepolia.blockscout.com/api/"
   },
   "dependencies": {
     "@farcaster/auth-kit": "^0.8.2",
