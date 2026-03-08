@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@farcaster/auth-kit": "^0.8.2",
     "@farcaster/miniapp-sdk": "^0.2.2",
     "@farcaster/miniapp-wagmi-connector": "^1.1.0",
     "@hookform/resolvers": "^3.10.0",

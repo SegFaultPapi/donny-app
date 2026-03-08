@@ -13,20 +13,25 @@ export interface FarcasterUser {
 }
 
 /**
- * Get user identity using the SDK
- * This works when the app is running inside a Farcaster Mini App
- * Note: Identity is available through context, not a direct SDK method
+ * Get user identity using the SDK context
+ * Only works when the app is running inside a Farcaster Mini App (sdk.context has user)
  */
 export async function getFarcasterIdentity(): Promise<FarcasterUser | null> {
   try {
-    if (typeof window === "undefined" || !sdk) {
+    if (typeof window === "undefined" || !sdk?.context) {
       return null
     }
 
-    // The SDK provides context, but identity may need to be obtained differently
-    // For now, we'll return null and handle identity through sign-in flow
-    // In a real implementation, you'd get this from the authenticated session
-    return null
+    const ctx = await sdk.context
+    const u = ctx?.user
+    if (!u?.fid) return null
+
+    return {
+      fid: u.fid,
+      username: u.username,
+      displayName: u.displayName,
+      pfpUrl: u.pfpUrl,
+    }
   } catch (error) {
     console.error("Error getting Farcaster identity:", error)
     return null

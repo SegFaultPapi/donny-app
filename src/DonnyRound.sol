@@ -11,8 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
  * @dev Tap-to-earn game contract with charity donations on CELO
  * Entry fee: 2 cUSD
  * Split: 60% prize pool, 40% charity
- * Rate limit: 600 taps/min per wallet. Cooldown: 1s on-chain (block.timestamp precision);
- *            100ms can be enforced in the UI for smoother UX.
+ * No tap limit or cooldown; compatible with Session Keys + Smart Contract Account (ERC-4337).
  */
 contract DonnyRound is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -22,8 +21,6 @@ contract DonnyRound is Ownable, ReentrancyGuard {
     uint256 public constant PRIZE_POOL_PERCENTAGE = 60; // 60% to prize pool
     uint256 public constant CHARITY_PERCENTAGE = 40; // 40% to charity
     uint256 public constant ROUND_DURATION = 24 hours;
-    uint256 public constant MAX_TAPS_PER_MINUTE = 600;
-    uint256 public constant MIN_TAP_COOLDOWN = 100; // 100ms in seconds (will use block.timestamp)
     uint256 public constant FIRST_PLACE_PERCENTAGE = 50;
     uint256 public constant SECOND_PLACE_PERCENTAGE = 30;
     uint256 public constant THIRD_PLACE_PERCENTAGE = 20;
@@ -43,9 +40,6 @@ contract DonnyRound is Ownable, ReentrancyGuard {
     // Participant tracking
     mapping(address => bool) public hasEntered;
     mapping(address => uint256) public taps;
-    mapping(address => uint256) public lastTapTimestamp;
-    mapping(address => uint256) public tapsInCurrentMinute;
-    mapping(address => uint256) public currentMinuteForWallet;
 
     address[] public participants;
 
@@ -104,37 +98,14 @@ contract DonnyRound is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Tap to increment tap count.
-     * Rate limit: 600 taps/min per wallet.
-     * Cooldown on-chain: 1 second (block.timestamp has 1s precision).
-     * The UI may enforce a 100ms cooldown for better UX; the contract enforces 1s.
+     * @dev Tap to increment tap count. No limit or cooldown.
      */
     function tap() external nonReentrant {
         require(hasEntered[msg.sender], "Not entered");
         require(block.timestamp < roundEndTime, "Round ended");
         require(!roundSettled, "Round settled");
 
-        // Calculate current minute (using block.timestamp / 60)
-        uint256 currentMinute = block.timestamp / 60;
-
-        // Reset counter if new minute
-        if (currentMinuteForWallet[msg.sender] != currentMinute) {
-            tapsInCurrentMinute[msg.sender] = 0;
-            currentMinuteForWallet[msg.sender] = currentMinute;
-        }
-
-        // Check rate limit (600 taps/min)
-        require(tapsInCurrentMinute[msg.sender] < MAX_TAPS_PER_MINUTE, "Rate limit exceeded");
-
-        // Check cooldown (1 second minimum between taps on-chain)
-        // EVM block.timestamp has 1s precision; UI can enforce 100ms for smoother UX
-        require(block.timestamp >= lastTapTimestamp[msg.sender] + 1, "Cooldown active");
-
-        // Increment taps
         taps[msg.sender]++;
-        tapsInCurrentMinute[msg.sender]++;
-        lastTapTimestamp[msg.sender] = block.timestamp;
-
         emit PlayerTapped(msg.sender, taps[msg.sender]);
     }
 

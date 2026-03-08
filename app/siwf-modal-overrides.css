@@ -1,0 +1,77 @@
+/* SIWF modal: dark theme overrides — import after @farcaster/auth-kit/styles.css */
+
+/* Overlay (backdrop) — darker */
+.nao3n42,
+[class*="nao3n42"] {
+  background: rgba(0, 0, 0, 0.8) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Modal panel (card): dark background, light text */
+._1sj0tk80,
+[class*="1sj0tk80"],
+[class*="sj0tk80"] {
+  background-color: #0c0c0c !important;
+  background: #0c0c0c !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  font-family: var(--font-sans), system-ui, sans-serif !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Modal title — visible on dark */
+._1sj0tk81,
+[class*="1sj0tk81"],
+[class*="sj0tk81"] {
+  color: #fafafa !important;
+  line-height: 1.35 !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Description / subtitle */
+._1sj0tk82,
+[class*="1sj0tk82"],
+[class*="sj0tk82"] {
+  color: #a1a1a1 !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.4 !important;
+}
+
+/* Link (e.g. "I'm using my phone") */
+._1sj0tk83,
+[class*="1sj0tk83"],
+[class*="sj0tk83"] {
+  color: #facc15 !important;
+  text-decoration: none !important;
+}
+._1sj0tk83:hover,
+[class*="1sj0tk83"]:hover,
+[class*="sj0tk83"]:hover {
+  text-decoration: underline !important;
+}
+
+/* Extra text */
+._1sj0tk84,
+[class*="1sj0tk84"],
+[class*="sj0tk84"] {
+  color: #a1a1a1 !important;
+  font-size: 0.9375rem !important;
+  margin-top: 0.5rem !important;
+}
+
+/* QR code container: no modificar — se deja tal cual (estilo por defecto de AuthKit) */
+
+/* Fixed bottom panel */
+._8rz8bk0,
+[class*="8rz8bk0"],
+[class*="rz8bk0"] {
+  background-color: #0c0c0c !important;
+  background: #0c0c0c !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #fafafa !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5) !important;
+}
